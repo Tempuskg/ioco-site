@@ -1,0 +1,217 @@
+IOCO END USER LICENSE AGREEMENT
+Version 1.0 - effective 3 October 2026
+
+Copyright (c) 2026 Tempuskg. All rights reserved.
+
+This agreement is between Tempuskg ("we", "us") and the person or organization
+that installs or uses IOCO ("you"). By installing or using IOCO you accept it.
+If you do not accept it, do not install or use IOCO. A plain-language summary
+is in docs/licensing.md; if the summary and this agreement differ, this
+agreement controls.
+
+1. THE PRODUCT
+
+1.1 "IOCO" means the IOCO analysis engine and command-line tool ("CLI"), the
+    IOCO extension for Visual Studio, the IOCO extension for Visual Studio
+    Code, their documentation, and updates we provide. IOCO is one product:
+    the editions below apply across all of these integrations. No edition is
+    charged per editor, per operating system, or per repository visibility
+    (public or private).
+
+1.2 Editions:
+    (a) "Community" - the features that do not require a License Key,
+        including the endpoint tree, source navigation, explanations, the
+        scatter report, dependency depth, diagnostics, the local CLI and its
+        JSON output.
+    (b) "Pro" - Community plus the features we designate as Pro, such as
+        file-to-URL lookup, saved map comparisons and formatted change-review
+        exports.
+    (c) "Team" - Pro plus the features we designate as Team, such as
+        automated CI reports, shared baselines and configuration,
+        consolidated billing and priority support.
+    The product documentation and the order identify which features belong to
+    each edition. An integration or feature that has not been released is not
+    included until it is released.
+
+1.3 "License Key" means the signed license file we issue for a Pro or Team
+    entitlement, a trial or a pilot. "Named User" means one identified
+    individual person. "Output" means files IOCO generates for you, such as
+    JSON maps, baselines, comparisons, Markdown and HTML reports, and CI
+    artifacts.
+
+2. COMMUNITY LICENSE (NO CHARGE)
+
+2.1 Subject to this agreement, we grant you a non-exclusive, worldwide,
+    royalty-free, non-transferable license to install and use the Community
+    edition, for any lawful purpose including commercial work, on any number
+    of devices and build or CI machines, for any number of users, without an
+    account or License Key.
+
+2.2 You may make copies of the unmodified IOCO packages for installation
+    within your own organization. Public distribution is through our official
+    channels (such as the Visual Studio Marketplace and the Visual Studio Code
+    Marketplace); you may not publish IOCO packages elsewhere without our
+    written permission.
+
+3. PAID LICENSES (PRO AND TEAM)
+
+3.1 Seats. A Pro or Team subscription is licensed per Named User seat. While
+    the subscription is active and paid, each seat lets its Named User use the
+    paid features of the purchased edition in every released IOCO integration
+    (Visual Studio, Visual Studio Code and the CLI) on any number of devices
+    that person uses. A seat may not be shared by several people at once or in
+    rotation.
+
+3.2 Reassignment. You may reassign a seat to another person who replaces the
+    original Named User (for example, when someone leaves the team or changes
+    role). Contact us or use the self-service tool when available; we may
+    decline reassignments that are more frequent than once per 30 days per
+    seat unless the original user has left your organization.
+
+3.3 Team. A Team subscription requires at least five seats and is purchased by
+    an organization. Team CI automation may run on any number of build agents
+    or runners for repositories maintained by the licensed team, at no charge
+    per runner or per run. People who only view Team Output (reports, build
+    summaries) do not need seats; every person who uses paid analysis or
+    editing workflows needs a seat.
+
+3.4 Term and renewal. Subscriptions are monthly or annual, as stated in the
+    order, and renew for the same period unless cancelled before the renewal
+    date. Prices may change at renewal with at least 30 days' notice; a price
+    change does not affect a period already paid for.
+
+3.5 Purchasing. Purchases may be processed by a reseller or merchant of record,
+    whose checkout terms govern payment, tax and invoicing. This agreement
+    governs your use of IOCO.
+
+3.6 Refunds. You may cancel a first annual purchase within 30 days of payment
+    for a full refund. Monthly subscriptions may be cancelled at any time and
+    end at the close of the current paid month without partial refunds.
+    Mandatory consumer rights are not affected.
+
+4. TRIALS AND PILOTS
+
+4.1 Pro trial. Each person may use one 14-day Pro trial at no charge and
+    without a payment card. The trial begins when you activate a Pro feature
+    after a successful first map, not at installation. We may refuse or end
+    trials that are obtained by creating multiple identities.
+
+4.2 Team pilot. A Team pilot is a 30-day paid evaluation for up to five Named
+    Users and one repository, including two onboarding sessions, at the price
+    stated in the order. If you buy an annual Team subscription when or before
+    the pilot ends, the pilot fee is credited once against your first annual
+    Team invoice. If we cannot deliver the workflow agreed for the pilot, we
+    refund the pilot fee. A pilot does not renew automatically.
+
+4.3 Trials and pilots are evaluations: they are provided "as is", may include
+    experimental features, and give no right to continued access once they
+    end.
+
+5. EXPIRY, CANCELLATION AND YOUR OUTPUT
+
+5.1 When a trial, pilot or subscription ends, or a seat is removed, the
+    affected user automatically reverts to the Community edition. Community
+    features continue to work. Paid features stop creating new paid Output. A
+    7-day grace period after a subscription's end date allows renewal payment
+    to be processed without interruption.
+
+5.2 Your Output belongs to you. IOCO does not delete, encrypt, expire or lock
+    Output. Files generated while you were licensed - including reports,
+    exports, baselines, comparisons and CI artifacts - remain yours to keep,
+    open, share within your organization and use indefinitely after expiry,
+    without a License Key. Opening saved Output again inside a paid IOCO
+    feature (for example, re-running a comparison) requires an active paid
+    license; reading the files themselves never does.
+
+5.3 License validation happens locally from the License Key. IOCO does not
+    need to contact us to analyze code, and expiry never disables Community
+    features or prevents access to Output.
+
+6. SUPPORT
+
+6.1 Community: help through the public question or issue channel named on the
+    listing or product page you obtained IOCO from, on a best-effort basis, with
+    no response target.
+
+6.2 Pro: email support, with a target first response within two business days.
+
+6.3 Team: priority email support, with a target first response within one
+    business day, plus onboarding sessions included in a pilot or order.
+
+6.4 Scope. Support covers installing and configuring IOCO in the environments
+    we list as supported, using its features, and investigating incorrect
+    results for documented supported ASP.NET Core patterns. Support does not
+    cover reviewing or restructuring your codebase (offered separately as a
+    paid codebase review), unsupported versions or environments, patterns
+    documented as outside the analysis, or custom development. Response
+    targets are goals, not a service level agreement: we do not promise a
+    resolution time, uptime or service credits. Business days are Monday to
+    Friday in our local time zone, excluding public holidays.
+
+7. RESTRICTIONS
+
+7.1 You may not: (a) circumvent, disable or tamper with License Key checks or
+    use paid features without a valid License Key; (b) sell, rent, lease,
+    sublicense or provide IOCO to third parties as a hosted service; (c)
+    remove or alter copyright, license or third-party notices; or (d) reverse
+    engineer IOCO except to the extent applicable law expressly permits
+    despite this restriction.
+
+7.2 You may build your own tools and reports from IOCO's CLI JSON output.
+    That is permitted Community use.
+
+7.3 Source code that we make visible (for example, in a public repository) is
+    provided for reference and evaluation. Visibility grants no right to copy,
+    modify, redistribute or create derivative works beyond what this agreement
+    states, unless we grant that right in writing.
+
+8. THIRD-PARTY COMPONENTS
+
+IOCO includes third-party components licensed under their own terms, listed in
+THIRD-PARTY-NOTICES.txt. Those terms govern those components and are not
+changed by this agreement. Nothing in this agreement restricts rights you have
+under an open source license for a component.
+
+9. PRIVACY
+
+IOCO analyzes code on your machine and sends no source code, routes, file
+paths, repository names or Output to us. A License Key contains the licensee
+name, contact email, edition, seat count and validity dates. Any optional
+usage measurement we introduce will be disclosed in advance, will require
+consent, and will exclude source code, routes, file paths, repository names
+and Output contents.
+
+10. WARRANTY DISCLAIMER
+
+IOCO is static analysis: its results are candidates and explanations, not a
+guarantee of runtime behavior or of every affected endpoint. EXCEPT AS
+EXPRESSLY STATED IN THIS AGREEMENT AND TO THE EXTENT PERMITTED BY LAW, IOCO IS
+PROVIDED "AS IS" WITHOUT WARRANTIES OF ANY KIND, INCLUDING MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT.
+
+11. LIMITATION OF LIABILITY
+
+TO THE EXTENT PERMITTED BY LAW, NEITHER PARTY IS LIABLE FOR INDIRECT,
+INCIDENTAL, SPECIAL OR CONSEQUENTIAL DAMAGES OR LOST PROFITS, AND OUR TOTAL
+LIABILITY UNDER THIS AGREEMENT IS LIMITED TO THE AMOUNTS YOU PAID US FOR IOCO
+IN THE 12 MONTHS BEFORE THE CLAIM (OR USD 50 IF YOU USE ONLY THE COMMUNITY
+EDITION). Mandatory consumer protections are not limited by this section.
+
+12. TERMINATION
+
+This agreement continues until terminated. You may terminate it by
+uninstalling IOCO. We may terminate your license if you materially breach this
+agreement and do not cure the breach within 30 days of notice. Sections 5.2,
+7, 8, 10, 11 and 13 survive termination. Termination never requires you to
+destroy Output.
+
+13. GENERAL
+
+We may publish new versions of this agreement; a new version applies to
+versions of IOCO released after its effective date and, for paid
+subscriptions, from your next renewal. This agreement, together with any
+order, is the entire agreement about IOCO. It is governed by the laws of the
+jurisdiction where Tempuskg has its principal place of business, without
+regard to conflict-of-laws rules, except where mandatory consumer law
+provides otherwise. If any provision is unenforceable, the rest remains in
+effect.

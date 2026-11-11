@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <title>IOCO</title>
+  <!-- IOCO mark: a URL path drawn as a tree. The root node branches down into two
+       endpoints, each ending in a small stack of files. Hand-authored master: every PNG
+       is exported from this file (see README.md). -->
+  <rect x="0" y="0" width="512" height="512" rx="112" fill="#0F766E"/>
+  <!-- Trunk and branches -->
+  <path d="M132 150 V384 H300 M132 224 H300" fill="none" stroke="#FFFFFF"
+        stroke-width="52" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Root -->
+  <circle cx="132" cy="124" r="60" fill="#FFFFFF"/>
+  <!-- Endpoint 1: a stack of files (amber card behind, white card in front) -->
+  <rect x="300" y="132" width="140" height="96" rx="22" fill="#FCD34D"/>
+  <rect x="264" y="168" width="148" height="112" rx="26" fill="#FFFFFF"/>
+  <!-- Endpoint 2: a stack of files -->
+  <rect x="300" y="292" width="140" height="96" rx="22" fill="#FCD34D"/>
+  <rect x="264" y="328" width="148" height="112" rx="26" fill="#FFFFFF"/>
+</svg>

@@ -1,0 +1,390 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>IOCO: find the code behind your .NET app's URLs, menus and commands</title>
+<meta name="description" content="IOCO maps an ASP.NET Core, WinForms, WPF or console app by its public interface and shows the files behind each URL, menu item and command, with the reason each file is there. Analysis stays on your machine.">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<style>
+  :root {
+    --fg: #1d2330; --muted: #5a6475; --bg: #ffffff; --panel: #f4f6f9; --line: #dde2ea;
+    --accent: #2a5bd7; --accent-fg: #ffffff; --ok: #1f7a3f; --plan: #8a5a00; --no: #8b2b2b;
+    --code-bg: #0f1724; --code-fg: #e6edf6;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --fg: #e6e9ef; --muted: #a3acbb; --bg: #11151c; --panel: #1a2029; --line: #2c3442;
+      --accent: #7aa2ff; --accent-fg: #0b1020; --ok: #6fd28f; --plan: #f0be5a; --no: #f08a8a;
+      --code-bg: #0a0e15; --code-fg: #e6edf6;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 16px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color: var(--fg); background: var(--bg); }
+  header.top { border-bottom: 1px solid var(--line); }
+  .wrap { max-width: 1040px; margin: 0 auto; padding: 0 20px; }
+  nav { display: flex; gap: 18px; align-items: center; flex-wrap: wrap; padding: 14px 0; }
+  nav .brand { font-weight: 700; font-size: 18px; margin-right: auto; display: flex; gap: 8px; align-items: center; color: var(--fg); text-decoration: none; }
+  nav .brand img { width: 28px; height: 28px; }
+  nav a { color: var(--muted); text-decoration: none; }
+  nav a:hover { color: var(--fg); }
+  section { padding: 44px 0; border-bottom: 1px solid var(--line); }
+  h1 { font-size: 36px; line-height: 1.2; margin: 0 0 14px; }
+  h2 { font-size: 26px; margin: 0 0 14px; }
+  h3 { font-size: 19px; margin: 26px 0 8px; }
+  p.lead { font-size: 19px; color: var(--muted); max-width: 760px; }
+  a { color: var(--accent); }
+  .buttons { display: flex; gap: 12px; flex-wrap: wrap; margin: 22px 0 6px; }
+  .btn { display: inline-block; padding: 10px 18px; border-radius: 6px; border: 1px solid var(--accent); text-decoration: none; font-weight: 600; }
+  .btn.primary { background: var(--accent); color: var(--accent-fg); }
+  .btn.secondary { color: var(--accent); }
+  .pending { display: inline-block; padding: 10px 18px; border-radius: 6px; border: 1px dashed var(--line); color: var(--muted); font-weight: 600; }
+  .note { color: var(--muted); font-size: 14px; }
+  pre { background: var(--code-bg); color: var(--code-fg); padding: 14px 16px; border-radius: 6px; overflow-x: auto; font: 13px/1.5 ui-monospace, "Cascadia Mono", Consolas, monospace; }
+  code { font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; font-size: 0.92em; }
+  table { border-collapse: collapse; width: 100%; margin: 12px 0; font-size: 15px; }
+  th, td { text-align: left; vertical-align: top; padding: 9px 10px; border-bottom: 1px solid var(--line); }
+  th { background: var(--panel); }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 18px; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 18px; }
+  .card h3 { margin-top: 0; }
+  .tag { display: inline-block; font-size: 12px; font-weight: 700; padding: 2px 8px; border-radius: 10px; border: 1px solid currentColor; white-space: nowrap; }
+  .tag.ok { color: var(--ok); } .tag.plan { color: var(--plan); } .tag.no { color: var(--no); }
+  ol.path { counter-reset: step; list-style: none; padding: 0; }
+  ol.path > li { counter-increment: step; position: relative; padding: 0 0 18px 48px; }
+  ol.path > li::before { content: counter(step); position: absolute; left: 0; top: 0; width: 32px; height: 32px; border-radius: 50%; background: var(--accent); color: var(--accent-fg); display: flex; align-items: center; justify-content: center; font-weight: 700; }
+  footer { padding: 28px 0 44px; color: var(--muted); font-size: 14px; }
+</style>
+</head>
+<body>
+
+<!--
+  Owner settings. Every link that does not exist yet stays null; the page then shows the
+  "pending" text in its place instead of a dead link. See website/README.md.
+-->
+<script>
+  window.IOCO_SITE = {
+    checkoutPro: null,          // merchant-of-record checkout URL for Pro (card-mupoxfsv-r)
+    checkoutTeamPilot: null,    // Team pilot order or request form
+    vscodeMarketplace: "https://marketplace.visualstudio.com/items?itemName=DarrenJMcLeod.ioco-vscode", // VS Code Marketplace listing (card-mupoxfsv-m)
+    visualStudioMarketplace: null, // Visual Studio Marketplace listing (card-mupoxfsv-n)
+    nugetCli: null,             // nuget.org page for Ioco.Cli
+    demoVideo: null,            // recorded 3-minute demo (docs/tutorials/README.md schedule)
+    tutorials: "https://github.com/Tempuskg/ioco-tutorials", // published tutorials page with ioco-tutorial-sample.zip
+    eula: "LICENSE.txt",        // copy of the repository LICENSE.txt published with the site
+    contact: null               // public contact address or form for pilots and support
+  };
+</script>
+
+<header class="top">
+  <div class="wrap">
+    <nav>
+      <a class="brand" href="#"><img src="icon.svg" alt="">IOCO</a>
+      <a href="#demo">Demo</a>
+      <a href="#install">Install</a>
+      <a href="#patterns">Supported patterns</a>
+      <a href="#privacy">Privacy</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#trial">Trial</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+<section id="hero">
+  <div class="wrap">
+    <h1>Find the code behind your ASP.NET Core URLs.</h1>
+    <p class="lead">Review changes with the relevant files in view. Analysis stays on your machine.</p>
+    <p>IOCO maps a .NET solution by what its users see: every URL of an ASP.NET Core app, every
+      menu item of a WinForms or WPF app, every command of a console app. Under each one it lists
+      the files that serve it, and why each file is there. It reads source with Roslyn and needs
+      no build, so it also works on code that doesn't compile. It doesn't move or change any file.</p>
+    <div class="buttons">
+      <a class="btn primary" href="#install">Install the free Community edition</a>
+      <a class="btn secondary" href="#trial">Start the 14-day Pro trial</a>
+    </div>
+    <p class="note"><span class="tag plan">Preview</span> Version 0.1.0 is an early preview, released
+      to design partners first. Each install route below says whether it is open yet.</p>
+  </div>
+</section>
+
+<section id="demo">
+  <div class="wrap">
+    <h2>Demo: from a bug report URL to the code</h2>
+    <p data-link="demoVideo" data-label="Watch the 3-minute demo video" data-pending="The 3-minute demo video is still being recorded. The walkthrough below uses the same sample and the same steps.">
+    </p>
+    <p>A ticket says <code>/Order/Detail/42</code> shows <em>Not found</em>. The sample is an
+      eShopOnWeb-shaped ASP.NET Core 8 app laid out by layer (<code>Controllers/</code>,
+      <code>Views/</code>, <code>ViewModels/</code>, <code>Services/</code> …). IOCO lists what
+      serves that URL in the IOCO view of both editors, or in the CLI:</p>
+<pre>$ ioco map EShopLayered.sln
+…
+* GET /Order/Detail/{id?}  [mvc] OrderController.Detail
+    route source           src/Web/Controllers/OrderController.cs  OrderController.Detail matched by conventional route 'default' ({controller=Home}/{action=Index}/{id?})
+    route config           src/Web/Program.cs  conventional route 'default': {controller=Home}/{action=Index}/{id?}
+    view                   src/Web/Views/Shared/NotFound.cshtml  View("NotFound") by name in OrderController.Detail resolves to src/Web/Views/Shared/NotFound.cshtml
+    model                  src/Web/ViewModels/OrderViewModel.cs  model passed to View(nameof(Detail), viewModel) in OrderController.Detail (+1 more)
+    view                   src/Web/Views/Order/Detail.cshtml  View(nameof(Detail), viewModel) by name in OrderController.Detail resolves to src/Web/Views/Order/Detail.cshtml
+    partial view           src/Web/Views/Order/_OrderItems.cshtml  partial "_OrderItems" referenced by src/Web/Views/Order/Detail.cshtml:6
+    model                  src/Web/ViewModels/OrderItemViewModel.cs  @model IEnumerable&lt;OrderItemViewModel&gt; in src/Web/Views/Order/_OrderItems.cshtml
+    service                src/Web/Interfaces/IOrderViewModelService.cs [depth 1]  injected into OrderController constructor (orderViewModelService)
+    service implementation src/Web/Services/OrderViewModelService.cs [depth 1]  implementation of IOrderViewModelService registered by AddScoped&lt;IOrderViewModelService, OrderViewModelService&gt;() in Program.cs:16</pre>
+    <p>Nine files in seven folders, each with the reason it is listed. Reading the controller
+      and the route config shows the cause: the route value is <code>{id?}</code>, the action
+      parameter is <code>orderId</code>. IOCO points to the files. You still read the code to find the bug.</p>
+
+    <h3>Where each feature's files live</h3>
+    <p>The scatter report lists, for each feature, the folders its files are in today and where
+      Interface Oriented Code Organization would put them. It describes the layout. It is not a quality score.</p>
+<pre>Web: Order  (4 endpoint(s); IOCO folder: Order/; 10 folder(s) today)
+  Controllers/
+    OrderController.cs                           -&gt; Order/
+  Infrastructure/
+    SmtpEmailSender.cs                           shared by 3 features (account, Manage, Order)
+  Interfaces/
+    IOrderViewModelService.cs                    used by 2 features (api, Order); rule of three not met
+  …</pre>
+
+    <h3>Pro: which URLs does this change touch?</h3>
+    <p>A pull request changes the shared <code>SmtpEmailSender</code>. <code>ioco review</code>
+      turns the Git diff into candidate URLs to review, with the relationship behind each one:</p>
+<pre>$ git diff --name-status | ioco review EShopLayered.sln
+URLs to review from changed files (7)
+  GET /Manage/ChangePassword  [mvc] ManageController.ChangePassword
+    M src/Web/Infrastructure/SmtpEmailSender.cs  service implementation [depth 1]
+  …
+  GET,POST /Order/Checkout  [page] Pages/Order/Checkout
+    M src/Web/Infrastructure/SmtpEmailSender.cs  service implementation [depth 1]
+  POST /account/send-verification-email  [mvc] ManageController.SendVerificationEmail
+    M src/Web/Infrastructure/SmtpEmailSender.cs  service implementation [depth 1]
+
+Changed files with no mapped URL (0)</pre>
+    <p>These are candidates to review, not proof of runtime impact. An unlisted URL can still be
+      affected, and the report says so. <code>--format markdown</code> or <code>--format html</code>
+      writes the same review as a file you can attach to the pull request.</p>
+    <p class="note">The outputs above come from the tutorial sample and are checked by IOCO's test suite.
+      <span data-link="tutorials" data-label="Get the sample and the full tutorials." data-pending="The tutorials and the downloadable sample will be published with this site."></span></p>
+  </div>
+</section>
+
+<section id="install">
+  <div class="wrap">
+    <h2>Install and get your first map</h2>
+    <p>One product with three integrations. They share the same analysis engine and the same license.</p>
+    <div class="grid">
+      <div class="card">
+        <h3>VS Code <span class="tag plan">Preview</span></h3>
+        <ol>
+          <li>Install the <strong>.NET 8 runtime</strong> or later. The SDK is not needed.</li>
+          <li>Install <strong>IOCO View</strong>:
+            <span data-link="vscodeMarketplace" data-label="from the VS Code Marketplace" data-pending="the Marketplace listing is not published yet. Design partners receive a .vsix file. Install it with Extensions: Install from VSIX…"></span>.
+            The extension bundles the IOCO CLI.</li>
+          <li>Open a folder with your solution. IOCO maps a single <code>.sln</code> automatically.
+            Otherwise, run <strong>IOCO: Choose Solution…</strong>.</li>
+          <li>Open the <strong>IOCO</strong> view in the Explorer.</li>
+        </ol>
+        <p class="note">Validated on local Windows x64 with VS Code 1.140.0 and 1.142.0. macOS, Linux,
+          ARM64 and remote (SSH, container, WSL) hosts are not validated yet.</p>
+      </div>
+      <div class="card">
+        <h3>Visual Studio <span class="tag plan">Preview</span></h3>
+        <ol>
+          <li>Install <strong>IOCO View</strong>:
+            <span data-link="visualStudioMarketplace" data-label="from the Visual Studio Marketplace" data-pending="the Marketplace listing is not published yet. Design partners receive a .vsix file."></span>.</li>
+          <li>Open your solution, then <strong>View &gt; Other Windows &gt; IOCO</strong>.</li>
+          <li>The tool window maps the open solution, in process.</li>
+        </ol>
+        <p class="note">The IOCO window has been checked on Visual Studio Community 2022 17.14.25 and
+          Community 2026 18.10.3 (Windows x64). Visual Studio 2022 17.9, Professional/Enterprise,
+          ARM64 and a clean-machine install are not validated yet.</p>
+      </div>
+      <div class="card">
+        <h3>Command line <span class="tag plan">Preview</span></h3>
+        <ol>
+          <li>Install the .NET 8 SDK or later. Installing a .NET tool needs the SDK.</li>
+          <li><span data-link="nugetCli" data-label="Install Ioco.Cli from NuGet" data-pending="Ioco.Cli is not on nuget.org yet. Design partners receive the package file and install it"></span>:
+            <code>dotnet tool install --global Ioco.Cli --add-source &lt;folder with the .nupkg&gt;</code></li>
+          <li><code>ioco map path/to/YourApp.sln</code>, or add <code>--json</code> for the JSON map.</li>
+        </ol>
+        <p class="note">The JSON output follows a versioned contract and is free to use in your own tools.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="patterns">
+  <div class="wrap">
+    <h2>Supported patterns</h2>
+    <p>IOCO picks an organizer for each project from its project file. A solution can mix organizers,
+      and each one gets its own tree. Libraries appear through the entries that use them.</p>
+    <table>
+      <thead><tr><th>Project</th><th>What is mapped</th></tr></thead>
+      <tbody>
+        <tr><td>ASP.NET Core (C#)</td><td>MVC controllers with attribute routes (<code>[Route]</code>, <code>[HttpGet("…")]</code>, <code>[controller]</code>/<code>[action]</code>/<code>[area]</code> tokens) and conventional routes (<code>MapControllerRoute</code>, <code>MapDefaultControllerRoute</code>, <code>MapAreaControllerRoute</code>); Razor Pages with handlers; minimal APIs including nested <code>MapGroup</code> prefixes.
+          For each endpoint: views and partials (resolved through ASP.NET Core's default locations), models and page models, and injected services with their DI-registered implementations, to a depth you choose.</td></tr>
+        <tr><td>WinForms (C# and Visual Basic)</td><td><code>MenuStrip</code>/<code>ToolStripMenuItem</code> and <code>MainMenu</code>/<code>MenuItem</code>, from the designer or code, with text from code or <code>.resx</code>; toolbar buttons and context menus; for an app without a menu, its startup form and the forms reachable from it.</td></tr>
+        <tr><td>WPF (C#)</td><td>XAML <code>Menu</code>/<code>MenuItem</code> with <code>Click</code> handlers, view-model commands (<code>RelayCommand</code>, <code>DelegateCommand</code>, CommunityToolkit <code>[RelayCommand]</code>, custom <code>ICommand</code>) and routed commands; toolbars, context menus and <code>System.Windows.Controls.Ribbon</code>; windows for an app without a menu.</td></tr>
+        <tr><td>Console (C#)</td><td>System.CommandLine, Spectre.Console.Cli, CommandLineParser, McMaster.Extensions.CommandLineUtils, Cocona and ConsoleAppFramework commands, plus hand-written dispatch on <code>args</code>.</td></tr>
+      </tbody>
+    </table>
+    <h3>Known limits</h3>
+    <ul>
+      <li>Routes must be constant strings. Custom route conventions, <code>AddPageRoute</code>, a custom Razor Pages root and custom view location expanders are not modelled.</li>
+      <li><code>Compile Remove</code>/<code>Include</code>, conditional properties and <code>Directory.Build.props</code> are ignored; sources come from the SDK's default globs.</li>
+      <li>Layouts and view components are not listed as serving files. Third-party ribbons and menus built at run time are not mapped.</li>
+      <li>Visual Basic WPF, web and console projects are loaded but not mapped. F# projects are skipped.</li>
+      <li>A file relationship is not proof of runtime impact, and an empty lookup does not prove a file has no impact.</li>
+    </ul>
+  </div>
+</section>
+
+<section id="privacy">
+  <div class="wrap">
+    <h2>Privacy</h2>
+    <ul>
+      <li><strong>Your code stays on your machine.</strong> The editors and the CLI read files locally.
+        They have no telemetry and make no network calls. The VS Code extension starts one local process,
+        the bundled CLI, with .NET telemetry turned off.</li>
+      <li><strong>Licenses are checked offline.</strong> The trial and signed license files are validated on
+        your computer. There is no account, and IOCO never contacts a server about your license.</li>
+      <li><strong>Maps and reports stay where you put them.</strong> A map shows your application's structure,
+        so treat it like source. Team settings and baselines are ordinary files in your own repository.
+        CI reports should stay in storage you control.</li>
+      <li><strong>Checkout is the only exchange with us.</strong> Payment will be handled by a merchant of
+        record, which receives your billing details and never your code. This page loads no analytics,
+        fonts or scripts from other sites.</li>
+    </ul>
+  </div>
+</section>
+
+<section id="pricing">
+  <div class="wrap">
+    <h2>Pricing</h2>
+    <p><strong>One named-user license covers Visual Studio, VS Code and the CLI</strong>, on any of your
+      devices. You don't pay again to switch editors, and private repositories are included. Prices are
+      <strong>proposed launch prices</strong> in USD before tax. They may change before checkout opens.</p>
+    <p class="note">Labels: <span class="tag ok">Available</span> works in the current preview.
+      <span class="tag plan">Proposed</span> not built yet, or delivered by hand during pilots.</p>
+    <div class="grid">
+      <div class="card">
+        <h3>Community</h3>
+        <p><strong>Free</strong> for any use, including commercial work. No account or key.</p>
+        <ul>
+          <li><span class="tag ok">Available</span> URL, menu and command trees with every serving file</li>
+          <li><span class="tag ok">Available</span> Reasons for each file, and the dependency depth</li>
+          <li><span class="tag ok">Available</span> One-click navigation to the source</li>
+          <li><span class="tag ok">Available</span> Scatter report and diagnostics</li>
+          <li><span class="tag ok">Available</span> Local CLI and <code>ioco map --json</code></li>
+          <li><span class="tag ok">Available</span> Shared <code>ioco.json</code> settings and <code>ioco baseline</code>. In this preview they run without a license. The proposed Team offer lists them below.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Pro</h3>
+        <p><strong>$12</strong> per developer/month or <strong>$99</strong>/year <span class="tag plan">Proposed price</span></p>
+        <p>Everything in Community, plus:</p>
+        <ul>
+          <li><span class="tag ok">Available</span> File-to-URL lookup: candidate affected endpoints for a selected file (VS Code and Visual Studio)</li>
+          <li><span class="tag ok">Available</span> Saved map comparisons: <code>ioco compare</code> (CLI)</li>
+          <li><span class="tag ok">Available</span> Change review from a Git diff, with Markdown and HTML export: <code>ioco review</code> (CLI)</li>
+          <li><span class="tag plan">Proposed</span> Map comparison and change review inside the editors</li>
+          <li>Email support, target first response in 2 business days</li>
+        </ul>
+        <p><a href="#trial">14-day trial, no card</a></p>
+      </div>
+      <div class="card">
+        <h3>Team</h3>
+        <p><strong>$249</strong> per developer/year, minimum 5 seats (<strong>$1,245</strong>/year) <span class="tag plan">Proposed price</span></p>
+        <p>Everything in Pro, plus:</p>
+        <ul>
+          <li><span class="tag plan">Proposed</span> Automated change-review reports in your CI, for repositories the team maintains. No charge per runner or report viewer. During pilots these reports are produced with your team by hand.</li>
+          <li><span class="tag ok">Available</span> Shared baseline and settings committed to your repository (no license needed in the preview, see Community)</li>
+          <li><span class="tag plan">Proposed</span> Consolidated billing</li>
+          <li><span class="tag plan">Proposed</span> Priority email support, target first response in 1 business day</li>
+        </ul>
+        <p><a href="#team-pilot">30-day paid pilot</a></p>
+      </div>
+    </div>
+    <h3>Codebase review <span class="tag plan">Proposed</span></h3>
+    <p><strong>$1,500</strong> one time. We review one agreed ASP.NET Core solution, explain its map and
+      the analysis gaps, write a prioritized report and hold a 90-minute handover. It is a service and
+      does not include a subscription.</p>
+  </div>
+</section>
+
+<section id="trial">
+  <div class="wrap">
+    <h2>From a free map to Pro</h2>
+    <p>The trial starts when you choose to start it, not when you install. The upgrade prompt appears
+      when you use a Pro feature. Apart from that, the editors show your license status, and while the
+      trial is unused the VS Code view notes after each map that it is available. Community features
+      never stop to ask you to upgrade.</p>
+    <ol class="path">
+      <li><strong>Install Community and map your solution.</strong> Follow the <a href="#install">install steps</a>.
+        The trial can only start after one successful map.</li>
+      <li><strong>Use a Pro feature on your own code.</strong>
+        In VS Code, right-click a file and choose <strong>Show Candidate Affected Endpoints</strong>.
+        In Visual Studio, use <strong>Tools &gt; IOCO: Candidate Affected Endpoints</strong>.
+        In the CLI, run <code>git diff --name-status main...HEAD | ioco review</code> or <code>ioco compare</code>.</li>
+      <li><strong>Start the 14-day Pro trial.</strong> The editor prompt offers
+        <strong>Start 14-day Pro trial</strong>, the CLI prints how to start it, and you can run it directly:
+        <strong>IOCO: Start 14-day Pro Trial</strong> in VS Code, <strong>Start 14-day Pro Trial</strong> in the
+        Visual Studio IOCO window, or <code>ioco license trial start</code>. You don't need a card or an account. The trial
+        is offered once per person and covers all three integrations.</li>
+      <li><strong>Get the result.</strong> Review the candidate URLs and their reasons, then export a
+        Markdown or HTML review to attach to your pull request.</li>
+      <li><strong>Buy Pro.</strong>
+        <span data-link="checkoutPro" data-label="Buy Pro" data-class="btn primary" data-pending="Checkout is not open yet. Until it opens, signed licenses are issued by hand to pilot participants."></span>
+        After checkout you receive a signed license file for one named user.</li>
+      <li><strong>Activate the license offline.</strong> Run <strong>IOCO: Activate Signed License</strong> in
+        VS Code, enter the file's path and choose
+        <strong>Activate License</strong> in the Visual Studio IOCO window, or
+        <code>ioco license activate &lt;file&gt;</code>. All three integrations on your computer use the same
+        license store. <strong>IOCO: License Status</strong> or <code>ioco license status</code> shows the
+        current state.</li>
+    </ol>
+    <h3>When a trial or subscription ends</h3>
+    <p>You go back to Community. Mapping, navigation and JSON keep working. Reports, exports and baselines
+      you generated are yours to keep, open and share without a key. Only running a Pro workflow again
+      needs a license. Subscriptions have a 7-day renewal grace period.</p>
+    <h3 id="team-pilot">Team pilot <span class="tag plan">Proposed</span></h3>
+    <p><strong>$250</strong> for 30 days, for up to five developers and one repository, with two onboarding sessions.
+      If you convert, the fee is credited once against the first annual Team invoice ($1,245 − $250 = $995).
+      If the agreed workflow can't be delivered, it is refunded. A pilot does not renew automatically.</p>
+    <p><span data-link="checkoutTeamPilot" data-label="Request a Team pilot" data-class="btn secondary" data-pending="Team pilot requests open with checkout."></span></p>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>IOCO is proprietary software. Use is governed by the
+      <span data-link="eula" data-label="IOCO End User License Agreement" data-pending="IOCO End User License Agreement"></span>.
+      Where this page and the agreement differ, the agreement controls. A feature belongs to the edition
+      the product documentation names. Features that have not shipped are not part of any edition until
+      they are released.</p>
+    <p>Interface Oriented Code Organization is described in
+      <a href="https://www.darrenmcleod.com/2022/03/interface-oriented-code-organizationioco.html">Darren McLeod's post</a>.
+      <span data-link="contact" data-label="Contact" data-pending=""></span></p>
+  </div>
+</footer>
+
+<script>
+  // Turn each data-link placeholder into a link when its URL is set, or into its pending text when not.
+  document.querySelectorAll('[data-link]').forEach(function (el) {
+    var url = window.IOCO_SITE[el.getAttribute('data-link')];
+    if (url) {
+      var a = document.createElement('a');
+      a.href = url;
+      a.textContent = el.getAttribute('data-label');
+      if (el.getAttribute('data-class')) a.className = el.getAttribute('data-class');
+      el.replaceChildren(a);
+    } else {
+      el.textContent = el.getAttribute('data-pending');
+      if (el.getAttribute('data-class') && el.textContent) el.className = 'pending';
+    }
+  });
+</script>
+</body>
+</html>
