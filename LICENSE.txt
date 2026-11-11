@@ -141,12 +141,12 @@ agreement controls.
 6.4 Scope. Support covers installing and configuring IOCO in the environments
     we list as supported, using its features, and investigating incorrect
     results for documented supported ASP.NET Core patterns. Support does not
-    cover reviewing or restructuring your codebase (offered separately as a
-    paid codebase review), unsupported versions or environments, patterns
-    documented as outside the analysis, or custom development. Response
-    targets are goals, not a service level agreement: we do not promise a
-    resolution time, uptime or service credits. Business days are Monday to
-    Friday in our local time zone, excluding public holidays.
+    cover reviewing or restructuring your codebase, unsupported versions or
+    environments, patterns documented as outside the analysis, or custom
+    development. Response targets are goals, not a service level agreement:
+    we do not promise a resolution time, uptime or service credits. Business
+    days are Monday to Friday in our local time zone, excluding public
+    holidays.
 
 7. RESTRICTIONS
 
